@@ -73,7 +73,7 @@ Resources:
       Runtime: java21
       MemorySize: 512
       Timeout: 30
-      CodeUri: ./target/s3NotificationLab-1.0-SNAPSHOT.jar
+      CodeUri: .
       Environment:
         Variables:
           SNS_TOPIC_ARN: !Ref NotificationTopic
