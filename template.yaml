@@ -19,7 +19,7 @@ Parameters:
 
 Resources:
   # S3 Bucket for file uploads
-  UploadBucket:
+  LambdaDeploymentBucket:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub 'week8-lab-${Environment}-${AWS::AccountId}'
@@ -47,7 +47,7 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !Ref UploadNotificationFunction
       Principal: s3.amazonaws.com
-      SourceArn: !GetAtt UploadBucket.Arn
+      SourceArn: !GetAtt LambdaDeploymentBucket.Arn
 
   # SNS Topic for notifications
   NotificationTopic:
@@ -82,12 +82,12 @@ Resources:
         - SNSPublishMessagePolicy:
             TopicName: !GetAtt NotificationTopic.TopicName
         - S3ReadPolicy:
-            BucketName: !Ref UploadBucket
+            BucketName: !Ref LambdaDeploymentBucket
 
 Outputs:
-  UploadBucketName:
+  LambdaDeploymentBucketName:
     Description: "S3 Bucket for file uploads"
-    Value: !Ref UploadBucket
+    Value: !Ref LambdaDeploymentBucket
 
   NotificationTopicArn:
     Description: "ARN of SNS Topic for notifications"
