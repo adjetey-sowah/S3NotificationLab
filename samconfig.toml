@@ -1,0 +1,22 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "week8-lab-notification-app"
+s3_bucket = "week8-lab-bucket" # This will be auto-generated
+s3_prefix = "week8-lab-notification-app"
+region = "eu-central-1"
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = true
+
+[dev]
+[dev.deploy]
+[dev.deploy.parameters]
+stack_name = "week8-lab-notification-dev"
+parameter_overrides = "Environment=dev"
+
+[prod]
+[prod.deploy]
+[prod.deploy.parameters]
+stack_name = "week8-lab-notification-prod"
+parameter_overrides = "Environment=prod"

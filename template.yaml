@@ -1,0 +1,102 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: S3 Upload Notification System with SNS
+
+# Parameters for environment-specific configuration
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+    Description: Environment name (dev or prod)
+
+  EmailSubscription:
+    Type: String
+    Description: Email address to receive notifications
+    Default: juliusadjeteysowah@gmail.com
+
+Resources:
+  # S3 Bucket for file uploads
+  UploadBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'week8-lab-${Environment}-${AWS::AccountId}'
+      NotificationConfiguration:
+        LambdaConfigurations:
+          - Event: 's3:ObjectCreated:*'
+            Function: !GetAtt UploadNotificationFunction.Arn
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - GET
+              - PUT
+              - POST
+              - DELETE
+              - HEAD
+            AllowedOrigins:
+              - '*'
+
+  # Permission for S3 to invoke Lambda
+  BucketPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref UploadNotificationFunction
+      Principal: s3.amazonaws.com
+      SourceArn: !GetAtt UploadBucket.Arn
+
+  # SNS Topic for notifications
+  NotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub 'week8-lab-notification-${Environment}'
+      DisplayName: 'File Upload Notifications'
+
+  # SNS Subscription for email notifications
+  EmailSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Protocol: email
+      TopicArn: !Ref NotificationTopic
+      Endpoint: !Ref EmailSubscription
+
+  # Lambda function to process S3 events
+  UploadNotificationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub 'week8-lab-processor-${Environment}'
+      Handler: com.giftedlabs.S3UploadHandler::handleRequest
+      Runtime: java11
+      MemorySize: 512
+      Timeout: 30
+      CodeUri: ./target/s3NotificationLab-1.0-SNAPSHOT.jar
+      Environment:
+        Variables:
+          SNS_TOPIC_ARN: !Ref NotificationTopic
+          ENVIRONMENT: !Ref Environment
+      Policies:
+        - SNSPublishMessagePolicy:
+            TopicName: !GetAtt NotificationTopic.TopicName
+        - S3ReadPolicy:
+            BucketName: !Ref UploadBucket
+
+Outputs:
+  UploadBucketName:
+    Description: "S3 Bucket for file uploads"
+    Value: !Ref UploadBucket
+
+  NotificationTopicArn:
+    Description: "ARN of SNS Topic for notifications"
+    Value: !Ref NotificationTopic
+
+  LambdaFunctionName:
+    Description: "Name of Lambda function processing uploads"
+    Value: !Ref UploadNotificationFunction
+
+  Environment:
+    Description: "Deployment environment"
+    Value: !Ref Environment
