@@ -49,3 +49,4 @@ jobs:
             --no-fail-on-empty-changeset \
             --region eu-central-1 \
             --parameter-overrides "Environment=${{ steps.set-env.outputs.ENV }} EmailSubscription=${{ secrets.NOTIFICATION_EMAIL }}"
+            --resolve-s3
