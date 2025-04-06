@@ -47,4 +47,5 @@ jobs:
           sam deploy \
             --config-env ${{ steps.set-env.outputs.ENV }} \
             --no-fail-on-empty-changeset \
+            --region eu-central-1 \
             --parameter-overrides "Environment=${{ steps.set-env.outputs.ENV }} EmailSubscription=${{ secrets.NOTIFICATION_EMAIL }}"
