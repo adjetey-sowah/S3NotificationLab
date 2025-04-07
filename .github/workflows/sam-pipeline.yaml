@@ -45,8 +45,9 @@ jobs:
       - name: SAM Deploy
         run: |
           sam deploy \
+            -- guided
             --config-file samconfig.toml \
             --no-fail-on-empty-changeset \
             --region eu-central-1 \
-            --parameter-overrides "Environment=${{ steps.set-env.outputs.ENV }} EmailSubscription=${{ secrets.NOTIFICATION_EMAIL }}"
+            --parameter-overrides "Environment=${{ steps.set-env.outputs.ENV }} EmailSubscription=${{ secrets.NOTIFICATION_EMAIL }}"  \
             --resolve-s3
