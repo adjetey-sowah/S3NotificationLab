@@ -49,5 +49,4 @@ jobs:
             --no-fail-on-empty-changeset \
             --s3-bucket wekk8-bucket \
             --region eu-central-1 \
-            --capabilities CAPABILITY_IAM \          
-            --parameter-overrides "Environment=${{ steps.set-env.outputs.ENV }} EmailSubscriptionParameter=${{ secrets.NOTIFICATION_EMAIL }}"
+            --capabilities CAPABILITY_IAM --parameter-overrides "Environment=${{ steps.set-env.outputs.ENV }} EmailSubscriptionParameter=${{ secrets.NOTIFICATION_EMAIL }}"
