@@ -109,13 +109,12 @@ Resources:
 
   # Update the S3 bucket to include the Lambda trigger
   S3BucketNotificationConfiguration:
-    Type: AWS::S3::Bucket
+    Type: AWS::S3::BucketNotification
     Properties:
-      BucketName: !Ref UploadBucket
-      NotificationConfiguration:
-        LambdaConfigurations:
-          - Event: 's3:ObjectCreated:*'
-            Function: !GetAtt S3NotificationFunction.Arn
+      Bucket: !Ref UploadBucket
+      LambdaConfigurations:
+        - Event: 's3:ObjectCreated:*'
+          Function: !GetAtt S3NotificationFunction.Arn
 
 Outputs:
   S3NotificationFunction:
