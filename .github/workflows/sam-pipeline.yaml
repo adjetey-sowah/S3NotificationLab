@@ -24,9 +24,9 @@ jobs:
         id: set-env
         run: |
           if [[ $GITHUB_REF == 'refs/heads/main' ]]; then
-            echo "ENV=dev" >> $GITHUB_OUTPUT
-          else
             echo "ENV=prod" >> $GITHUB_OUTPUT
+          else
+            echo "ENV=dev" >> $GITHUB_OUTPUT
           fi
 
       - name: Set up AWS SAM CLI
@@ -49,5 +49,4 @@ jobs:
             --no-fail-on-empty-changeset \
             --no-confirm-changeset \
             --s3-bucket wekk8-bucket \
-            --region eu-central-1 \
-            --capabilities CAPABILITY_IAM --parameter-overrides "Environment=${{ steps.set-env.outputs.ENV }} EmailSubscriptionParameter=${{ secrets.NOTIFICATION_EMAIL }}"
+            

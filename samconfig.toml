@@ -13,7 +13,7 @@ s3_prefix = "s3-notification-system-dev"
 region = "eu-central-1"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
-parameter_overrides = "Environment=dev EmailSubscription=dev-admin@example.com BucketName=s3-notification-bucket"
+parameter_overrides = "Environment=dev EmailSubscription=julius.sowah@amalitech.com BucketName=week8lab-bokiti"
 
 [prod]
 [prod.deploy]
@@ -24,4 +24,4 @@ s3_prefix = "s3-notification-system-prod"
 region = "eu-central-1"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
-parameter_overrides = "Environment=prod EmailSubscription=prod-admin@example.com BucketName=s3-notification-bucket"
+parameter_overrides = "Environment=prod EmailSubscription=juliusadjeteysowah@gmail.com BucketName=week8lab-bokiti"

@@ -7,7 +7,6 @@ Description: >
 Parameters:
   Environment:
     Type: String
-    Default: dev
     AllowedValues:
       - dev
       - prod
@@ -16,7 +15,6 @@ Parameters:
   EmailSubscriptionParameter:
     Type: String
     Description: Email address to receive S3 upload notifications
-    Default: "julius.sowah@amalitech.com"
 
   BucketName:
     Type: String
@@ -28,8 +26,6 @@ Globals:
     Timeout: 20
     MemorySize: 512
 
-Conditions:
-  CreateBucket: !Equals [!Ref Environment, "dev"]
 
 Resources:
   # S3 bucket to store files
