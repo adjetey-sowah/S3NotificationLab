@@ -96,8 +96,8 @@ Resources:
   NotificationTopic:
     Type: AWS::SNS::Topic
     Properties:
-      TopicName: !Sub "s3-upload-notifications-${Environment}"
-      DisplayName: !Sub "S3 Upload Notifications (${Environment})"
+      TopicName: !Sub "week8-lab-notifications-${Environment}"
+      DisplayName: !Sub "Week8-Lab Notifications (${Environment})"
 
   # Email subscription to the SNS topic
   EmailSubscription:

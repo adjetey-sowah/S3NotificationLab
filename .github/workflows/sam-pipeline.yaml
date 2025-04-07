@@ -24,9 +24,9 @@ jobs:
         id: set-env
         run: |
           if [[ $GITHUB_REF == 'refs/heads/main' ]]; then
-            echo "ENV=prod" >> $GITHUB_OUTPUT
-          else
             echo "ENV=dev" >> $GITHUB_OUTPUT
+          else
+            echo "ENV=prod" >> $GITHUB_OUTPUT
           fi
 
       - name: Set up AWS SAM CLI
