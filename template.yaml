@@ -36,6 +36,11 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub "${BucketName}-${Environment}"
+      NotificationConfiguration:
+        LambdaConfigurations:
+          - Event: 's3:ObjectCreated:*'
+            Function: !GetAtt S3NotificationFunction.Arn
+    DependsOn: S3NotificationPermission
 
   # IAM Role for the Lambda function
   S3NotificationFunctionRole:
@@ -50,6 +55,8 @@ Resources:
                 - lambda.amazonaws.com
             Action:
               - sts:AssumeRole
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
       Policies:
         - PolicyName: S3ReadPolicy
           PolicyDocument:
@@ -58,7 +65,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - s3:GetObject
-                Resource: !Sub "arn:aws:s3:::${UploadBucket}/*"
+                Resource: !Sub "arn:aws:s3:::${BucketName}-${Environment}/*"
         - PolicyName: SNSPublishPolicy
           PolicyDocument:
             Version: '2012-10-17'
@@ -90,7 +97,7 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !GetAtt S3NotificationFunction.Arn
       Principal: s3.amazonaws.com
-      SourceArn: !Sub "arn:aws:s3:::${UploadBucket}"
+      SourceArn: !Sub "arn:aws:s3:::${BucketName}-${Environment}"
 
   # SNS Topic for email notifications
   NotificationTopic:
@@ -106,16 +113,6 @@ Resources:
       Protocol: email
       TopicArn: !Ref NotificationTopic
       Endpoint: !Ref EmailSubscriptionParameter
-
-  # Update the S3 bucket to include the Lambda trigger
-  S3BucketNotificationConfiguration:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Ref UploadBucket
-      NotificationConfiguration:
-        LambdaConfigurations:
-          - Event: 's3:ObjectCreated:*'
-            Function: !GetAtt S3NotificationFunction.Arn
 
 Outputs:
   S3NotificationFunction:
