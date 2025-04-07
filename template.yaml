@@ -33,10 +33,52 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub "${BucketName}-${Environment}"
-      NotificationConfiguration:
-        LambdaConfigurations:
-          - Event: 's3:ObjectCreated:*'
-            Function: !GetAtt S3NotificationFunction.Arn
+
+  # IAM Role for the Lambda function
+  S3NotificationFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: S3ReadPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource: !Sub "arn:aws:s3:::${UploadBucket}/*"
+        - PolicyName: SNSPublishPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sns:Publish
+                Resource: !Ref NotificationTopic
+
+  # Lambda function to process S3 events
+  S3NotificationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: com.giftedlabs.S3UploadHandler::handleRequest
+      Runtime: java21
+      Architectures:
+        - x86_64
+      Role: !GetAtt S3NotificationFunctionRole.Arn
+      Environment:
+        Variables:
+          SNS_TOPIC_ARN: !Ref NotificationTopic
+          ENVIRONMENT: !Ref Environment
 
   # Lambda permission for S3 to invoke function
   S3NotificationPermission:
@@ -62,24 +104,15 @@ Resources:
       TopicArn: !Ref NotificationTopic
       Endpoint: !Ref EmailSubscriptionParameter
 
-  # Lambda function to process S3 events
-  S3NotificationFunction:
-    Type: AWS::Serverless::Function
+  # Update the S3 bucket to include the Lambda trigger
+  S3BucketNotificationConfiguration:
+    Type: AWS::S3::Bucket
     Properties:
-      CodeUri: .
-      Handler: com.giftedlabs.S3UploadHandler::handleRequest
-      Runtime: java21
-      Architectures:
-        - x86_64
-      Environment:
-        Variables:
-          SNS_TOPIC_ARN: !Ref NotificationTopic
-          ENVIRONMENT: !Ref Environment
-      Policies:
-        - SNSPublishMessagePolicy:
-            TopicName: !GetAtt NotificationTopic.TopicName
-        - S3ReadPolicy:
-            BucketName: !Ref UploadBucket
+      BucketName: !Ref UploadBucket
+      NotificationConfiguration:
+        LambdaConfigurations:
+          - Event: 's3:ObjectCreated:*'
+            Function: !GetAtt S3NotificationFunction.Arn
 
 Outputs:
   S3NotificationFunction:
