@@ -47,5 +47,6 @@ jobs:
           sam deploy \
             --config-file samconfig.toml \
             --no-fail-on-empty-changeset \
+            --s3-bucket wekk8-bucket
             --region eu-central-1 \
             --parameter-overrides "Environment=${{ steps.set-env.outputs.ENV }} EmailSubscription=${{ secrets.NOTIFICATION_EMAIL }}"
