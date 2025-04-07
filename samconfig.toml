@@ -10,7 +10,7 @@ stack_name = "s3-notification-system"
 stack_name = "s3-notification-system-dev"
 s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-dev"
 s3_prefix = "s3-notification-system-dev"
-region = "us-east-1"
+region = "eu-central-1"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
 parameter_overrides = "Environment=dev EmailSubscription=dev-admin@example.com BucketName=s3-notification-bucket"
@@ -21,7 +21,7 @@ parameter_overrides = "Environment=dev EmailSubscription=dev-admin@example.com B
 stack_name = "s3-notification-system-prod"
 s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-prod"
 s3_prefix = "s3-notification-system-prod"
-region = "us-east-1"
+region = "eu-central-1"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
 parameter_overrides = "Environment=prod EmailSubscription=prod-admin@example.com BucketName=s3-notification-bucket"
