@@ -36,10 +36,6 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub "${BucketName}-${Environment}"
-      NotificationConfiguration:
-        LambdaConfigurations:
-          - Event: 's3:ObjectCreated:*'
-            Function: !GetAtt S3NotificationFunction.Arn
 
   # IAM Role for the Lambda function
   S3NotificationFunctionRole:
@@ -113,12 +109,13 @@ Resources:
 
   # Update the S3 bucket to include the Lambda trigger
   S3BucketNotificationConfiguration:
-    Type: AWS::S3::BucketNotification
+    Type: AWS::S3::Bucket
     Properties:
-      Bucket: !Ref UploadBucket
-      LambdaConfigurations:
-        - Event: 's3:ObjectCreated:*'
-          Function: !GetAtt S3NotificationFunction.Arn
+      BucketName: !Ref UploadBucket
+      NotificationConfiguration:
+        LambdaConfigurations:
+          - Event: 's3:ObjectCreated:*'
+            Function: !GetAtt S3NotificationFunction.Arn
 
 Outputs:
   S3NotificationFunction:
