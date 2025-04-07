@@ -43,9 +43,9 @@ Resources:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !Ref S3NotificationFunction
+      FunctionName: !GetAtt S3NotificationFunction.Arn
       Principal: s3.amazonaws.com
-      SourceArn: !GetAtt UploadBucket.Arn
+      SourceArn: !Sub "arn:aws:s3:::${UploadBucket}"
 
   # SNS Topic for email notifications
   NotificationTopic:
