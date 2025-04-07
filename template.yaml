@@ -1,8 +1,9 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: S3 Upload Notification System with SNS
+Description: >
+  S3 Event Notification System
+  An event-driven architecture that sends email notifications when files are uploaded to S3
 
-# Parameters for environment-specific configuration
 Parameters:
   Environment:
     Type: String
@@ -14,49 +15,46 @@ Parameters:
 
   EmailSubscription:
     Type: String
-    Description: Email address to receive notifications
-    Default: juliusadjeteysowah@gmail.com
+    Description: Email address to receive S3 upload notifications
+
+  BucketName:
+    Type: String
+    Description: Name for the S3 bucket (must be globally unique)
+    Default: s3-notification-bucket
+
+Globals:
+  Function:
+    Timeout: 20
+    MemorySize: 512
 
 Resources:
-  # S3 Bucket for file uploads
-  LambdaDeploymentBucket:
+  # S3 bucket to store files
+  UploadBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub 'week8-lab-${Environment}-${AWS::AccountId}'
+      BucketName: !Sub "${BucketName}-${Environment}"
       NotificationConfiguration:
         LambdaConfigurations:
           - Event: 's3:ObjectCreated:*'
-            Function: !GetAtt UploadNotificationFunction.Arn
-      CorsConfiguration:
-        CorsRules:
-          - AllowedHeaders:
-              - '*'
-            AllowedMethods:
-              - GET
-              - PUT
-              - POST
-              - DELETE
-              - HEAD
-            AllowedOrigins:
-              - '*'
+            Function: !GetAtt S3NotificationFunction.Arn
 
-  # Permission for S3 to invoke Lambda
-  BucketPermission:
+  # Lambda permission for S3 to invoke function
+  S3NotificationPermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !Ref UploadNotificationFunction
+      FunctionName: !Ref S3NotificationFunction
       Principal: s3.amazonaws.com
-      SourceArn: !GetAtt LambdaDeploymentBucket.Arn
+      SourceArn: !GetAtt UploadBucket.Arn
 
-  # SNS Topic for notifications
+  # SNS Topic for email notifications
   NotificationTopic:
     Type: AWS::SNS::Topic
     Properties:
-      TopicName: !Sub 'week8-lab-notification-${Environment}'
-      DisplayName: 'File Upload Notifications'
+      TopicName: !Sub "s3-upload-notifications-${Environment}"
+      DisplayName: !Sub "S3 Upload Notifications (${Environment})"
 
-  # SNS Subscription for email notifications
+  # Email subscription to the SNS topic
   EmailSubscription:
     Type: AWS::SNS::Subscription
     Properties:
@@ -65,15 +63,14 @@ Resources:
       Endpoint: !Ref EmailSubscription
 
   # Lambda function to process S3 events
-  UploadNotificationFunction:
+  S3NotificationFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub 'week8-lab-processor-${Environment}'
+      CodeUri: s3-notification-function/
       Handler: com.giftedlabs.S3UploadHandler::handleRequest
       Runtime: java21
-      MemorySize: 512
-      Timeout: 30
-      CodeUri: .
+      Architectures:
+        - x86_64
       Environment:
         Variables:
           SNS_TOPIC_ARN: !Ref NotificationTopic
@@ -82,21 +79,21 @@ Resources:
         - SNSPublishMessagePolicy:
             TopicName: !GetAtt NotificationTopic.TopicName
         - S3ReadPolicy:
-            BucketName: !Ref LambdaDeploymentBucket
+            BucketName: !Ref UploadBucket
 
 Outputs:
-  LambdaDeploymentBucketName:
-    Description: "S3 Bucket for file uploads"
-    Value: !Ref LambdaDeploymentBucket
+  S3NotificationFunction:
+    Description: "S3 Notification Lambda Function ARN"
+    Value: !GetAtt S3NotificationFunction.Arn
 
-  NotificationTopicArn:
-    Description: "ARN of SNS Topic for notifications"
+  UploadBucket:
+    Description: "S3 bucket for file uploads"
+    Value: !Ref UploadBucket
+
+  NotificationTopic:
+    Description: "SNS Topic ARN for notifications"
     Value: !Ref NotificationTopic
 
-  LambdaFunctionName:
-    Description: "Name of Lambda function processing uploads"
-    Value: !Ref UploadNotificationFunction
-
-  Environment:
-    Description: "Deployment environment"
-    Value: !Ref Environment
+  Region:
+    Description: "Region where resources are deployed"
+    Value: !Ref AWS::Region

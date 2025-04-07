@@ -17,27 +17,29 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Build with Maven
-        run: mvn clean package
-
-      - name: Set environment based on branch
-        id: set-env
-        run: |
-          if [[ $GITHUB_REF == 'refs/heads/main' ]]; then
-            echo "ENV=prod" >> $GITHUB_OUTPUT
-          else
-            echo "ENV=dev" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Set up AWS SAM CLI
+      - name: Setup AWS SAM CLI
         uses: aws-actions/setup-sam@v2
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-central-1
+          aws-region: us-east-1
+
+      - name: Determine environment
+        id: determine-env
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "environment=prod" >> $GITHUB_OUTPUT
+          else
+            echo "environment=dev" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build with Maven
+        run: |
+          cd s3-notification-function
+          mvn clean package
 
       - name: SAM Build
         run: sam build
@@ -45,8 +47,6 @@ jobs:
       - name: SAM Deploy
         run: |
           sam deploy \
-            --config-file samconfig.toml \
-            --no-fail-on-empty-changeset \
-            --region eu-central-1 \
-            --parameter-overrides "Environment=${{ steps.set-env.outputs.ENV }} EmailSubscription=${{ secrets.NOTIFICATION_EMAIL }}"
-            --resolve-s3
+            --config-env ${{ steps.determine-env.outputs.environment }} \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset
