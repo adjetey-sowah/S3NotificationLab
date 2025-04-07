@@ -36,6 +36,10 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub "${BucketName}-${Environment}"
+      NotificationConfiguration:
+        LambdaConfigurations:
+          - Event: 's3:ObjectCreated:*'
+            Function: !GetAtt S3NotificationFunction.Arn
 
   # IAM Role for the Lambda function
   S3NotificationFunctionRole:
