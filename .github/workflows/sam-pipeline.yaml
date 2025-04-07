@@ -45,6 +45,8 @@ jobs:
       - name: SAM Deploy
         run: |
           sam deploy \
-            --config-env ${{ steps.set-env.outputs.ENV }} \
+            --config-env ${{ steps.set-env.outputs.ENV}} \
             --no-fail-on-empty-changeset \
-            --parameter-overrides "Environment=${{ steps.set-env.outputs.ENV }} EmailSubscription=${{ secrets.NOTIFICATION_EMAIL }}"
+            --no-confirm-changeset \
+            --s3-bucket wekk8-bucket \
+            

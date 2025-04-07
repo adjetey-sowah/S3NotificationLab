@@ -1,102 +1,129 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: S3 Upload Notification System with SNS
+Description: >
+  S3 Event Notification System
+  An event-driven architecture that sends email notifications when files are uploaded to S3
 
-# Parameters for environment-specific configuration
 Parameters:
   Environment:
     Type: String
-    Default: dev
     AllowedValues:
       - dev
       - prod
     Description: Environment name (dev or prod)
 
-  EmailSubscription:
+  EmailSubscriptionParameter:
     Type: String
-    Description: Email address to receive notifications
-    Default: juliusadjeteysowah@gmail.com
+    Description: Email address to receive S3 upload notifications
+
+  BucketName:
+    Type: String
+    Description: Name for the S3 bucket (must be globally unique)
+    Default: week8lab-bokiti
+
+Globals:
+  Function:
+    Timeout: 20
+    MemorySize: 512
+
 
 Resources:
-  # S3 Bucket for file uploads
+  # S3 bucket to store files
   UploadBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub 'week8-lab-${Environment}-${AWS::AccountId}'
+      BucketName: !Sub "${BucketName}-${Environment}"
       NotificationConfiguration:
         LambdaConfigurations:
           - Event: 's3:ObjectCreated:*'
-            Function: !GetAtt UploadNotificationFunction.Arn
-      CorsConfiguration:
-        CorsRules:
-          - AllowedHeaders:
-              - '*'
-            AllowedMethods:
-              - GET
-              - PUT
-              - POST
-              - DELETE
-              - HEAD
-            AllowedOrigins:
-              - '*'
+            Function: !GetAtt S3NotificationFunction.Arn
+    DependsOn: S3NotificationPermission
 
-  # Permission for S3 to invoke Lambda
-  BucketPermission:
+  # IAM Role for the Lambda function
+  S3NotificationFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+      Policies:
+        - PolicyName: S3ReadPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource: !Sub "arn:aws:s3:::${BucketName}-${Environment}/*"
+        - PolicyName: SNSPublishPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sns:Publish
+                Resource: !Ref NotificationTopic
+
+  # Lambda function to process S3 events
+  S3NotificationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: com.giftedlabs.S3UploadHandler::handleRequest
+      Runtime: java21
+      Architectures:
+        - x86_64
+      Role: !GetAtt S3NotificationFunctionRole.Arn
+      Environment:
+        Variables:
+          SNS_TOPIC_ARN: !Ref NotificationTopic
+          ENVIRONMENT: !Ref Environment
+
+  # Lambda permission for S3 to invoke function
+  S3NotificationPermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !Ref UploadNotificationFunction
+      FunctionName: !GetAtt S3NotificationFunction.Arn
       Principal: s3.amazonaws.com
-      SourceArn: !GetAtt UploadBucket.Arn
+      SourceArn: !Sub "arn:aws:s3:::${BucketName}-${Environment}"
 
-  # SNS Topic for notifications
+  # SNS Topic for email notifications
   NotificationTopic:
     Type: AWS::SNS::Topic
     Properties:
-      TopicName: !Sub 'week8-lab-notification-${Environment}'
-      DisplayName: 'File Upload Notifications'
+      TopicName: !Sub "week8-lab-notifications-${Environment}"
+      DisplayName: !Sub "Week8-Lab Notifications (${Environment})"
 
-  # SNS Subscription for email notifications
+  # Email subscription to the SNS topic
   EmailSubscription:
     Type: AWS::SNS::Subscription
     Properties:
       Protocol: email
       TopicArn: !Ref NotificationTopic
-      Endpoint: !Ref EmailSubscription
-
-  # Lambda function to process S3 events
-  UploadNotificationFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub 'week8-lab-processor-${Environment}'
-      Handler: com.giftedlabs.S3UploadHandler::handleRequest
-      Runtime: java11
-      MemorySize: 512
-      Timeout: 30
-      CodeUri: ./target/s3NotificationLab-1.0-SNAPSHOT.jar
-      Environment:
-        Variables:
-          SNS_TOPIC_ARN: !Ref NotificationTopic
-          ENVIRONMENT: !Ref Environment
-      Policies:
-        - SNSPublishMessagePolicy:
-            TopicName: !GetAtt NotificationTopic.TopicName
-        - S3ReadPolicy:
-            BucketName: !Ref UploadBucket
+      Endpoint: !Ref EmailSubscriptionParameter
 
 Outputs:
-  UploadBucketName:
-    Description: "S3 Bucket for file uploads"
+  S3NotificationFunction:
+    Description: "S3 Notification Lambda Function ARN"
+    Value: !GetAtt S3NotificationFunction.Arn
+
+  UploadBucket:
+    Description: "S3 bucket for file uploads"
     Value: !Ref UploadBucket
 
-  NotificationTopicArn:
-    Description: "ARN of SNS Topic for notifications"
+  NotificationTopic:
+    Description: "SNS Topic ARN for notifications"
     Value: !Ref NotificationTopic
 
-  LambdaFunctionName:
-    Description: "Name of Lambda function processing uploads"
-    Value: !Ref UploadNotificationFunction
-
-  Environment:
-    Description: "Deployment environment"
-    Value: !Ref Environment
+  Region:
+    Description: "Region where resources are deployed"
+    Value: !Ref AWS::Region
