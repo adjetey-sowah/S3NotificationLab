@@ -13,7 +13,7 @@ Parameters:
       - prod
     Description: Environment name (dev or prod)
 
-  EmailSubscription:
+  EmailSubscriptionParameter:
     Type: String
     Description: Email address to receive S3 upload notifications
 
@@ -60,7 +60,7 @@ Resources:
     Properties:
       Protocol: email
       TopicArn: !Ref NotificationTopic
-      Endpoint: !Ref EmailSubscription
+      Endpoint: !Ref EmailSubscriptionParameter
 
   # Lambda function to process S3 events
   S3NotificationFunction:
