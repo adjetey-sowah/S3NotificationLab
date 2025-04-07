@@ -27,6 +27,9 @@ Globals:
     Timeout: 20
     MemorySize: 512
 
+Conditions:
+  CreateBucket: !Equals [!Ref Environment, "dev"]
+
 Resources:
   # S3 bucket to store files
   UploadBucket:
