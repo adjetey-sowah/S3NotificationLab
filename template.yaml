@@ -16,6 +16,7 @@ Parameters:
   EmailSubscriptionParameter:
     Type: String
     Description: Email address to receive S3 upload notifications
+    Default: "julius.sowah@amalitech.com"
 
   BucketName:
     Type: String
