@@ -56,6 +56,6 @@ jobs:
           sam deploy \
             --config-env ${{ steps.set-env.outputs.ENV}} \  
             --no-fail-on-empty-changeset \
-            --no-confirm-changeset  \
+            --no-confirm-changeset \
             --s3-bucket $BUCKET_NAME
             
