@@ -42,6 +42,14 @@ jobs:
       - name: SAM Build
         run: sam build
 
+      - name: Create deployment buckets if they don't exist
+        run: |
+          ENV=${{ steps.set-env.outputs.ENV}}
+          BUCKET_NAME="aws-sam-cli-managed-default-samclisourcebucket-$ENV"
+          if ! aws s3 ls "s3://$BUCKET_NAME" 2>&1 > /dev/null; then
+            aws s3 mb "s3://$BUCKET_NAME" --region eu-central-1
+          fi
+
       - name: SAM Deploy
         run: |
           sam deploy \
