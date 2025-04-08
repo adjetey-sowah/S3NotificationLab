@@ -8,7 +8,7 @@ stack_name = "s3-notification-system"
 [dev.deploy]
 [dev.deploy.parameters]
 stack_name = "s3-notification-system-dev"
-s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-dev-831926601640"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-dev-week8"
 s3_prefix = "s3-notification-system-dev"
 region = "eu-central-1"
 confirm_changeset = true
@@ -19,7 +19,7 @@ parameter_overrides = "Environment=dev EmailSubscriptionParameter=julius.sowah@a
 [prod.deploy]
 [prod.deploy.parameters]
 stack_name = "s3-notification-system-prod"
-s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-prod-831926601640"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-prod-week8"
 s3_prefix = "s3-notification-system-prod"
 region = "eu-central-1"
 confirm_changeset = true
