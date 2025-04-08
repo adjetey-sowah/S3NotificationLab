@@ -19,7 +19,7 @@ Parameters:
   BucketName:
     Type: String
     Description: Name for the S3 bucket (must be globally unique)
-    Default: week8lab-bokiti
+
 
 Globals:
   Function:
