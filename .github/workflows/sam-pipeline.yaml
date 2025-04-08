@@ -53,7 +53,5 @@ jobs:
 
       - name: SAM Deploy
         run: |
-          sam deploy \
-            --config-env ${{ steps.set-env.outputs.ENV}} \
-            --s3-bucket $BUCKET_NAME
+          sam deploy --config-env ${{ steps.set-env.outputs.ENV}} --s3-bucket $BUCKET_NAME
             
