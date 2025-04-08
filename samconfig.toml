@@ -3,6 +3,7 @@ version = 0.1
 [default]
 [default.global.parameters]
 stack_name = "s3-notification-system"
+fail_on_empty_changeset = false
 
 [dev]
 [dev.deploy]
