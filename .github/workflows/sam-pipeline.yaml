@@ -45,15 +45,17 @@ jobs:
       - name: Create deployment buckets if they don't exist
         run: |
           ENV=${{ steps.set-env.outputs.ENV}}
-          BUCKET_NAME="aws-sam-cli-managed-default-samclisourcebucket-$ENV"
+          UNIQUE_ID=$(aws sts get-caller-identity --query "Account" --output text)
+          BUCKET_NAME="aws-sam-cli-managed-default-samclisourcebucket-$ENV-$UNIQUE_ID"
           if ! aws s3 ls "s3://$BUCKET_NAME" 2>&1 > /dev/null; then
             aws s3 mb "s3://$BUCKET_NAME" --region eu-central-1
-          fi
+          fi      
 
       - name: SAM Deploy
         run: |
           sam deploy \
             --config-env ${{ steps.set-env.outputs.ENV}} \  
             --no-fail-on-empty-changeset \
-            --no-confirm-changeset 
+            --no-confirm-changeset  \
+            --s3-bucket $BUCKET_NAME
             
