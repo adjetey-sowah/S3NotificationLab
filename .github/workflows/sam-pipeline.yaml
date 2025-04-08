@@ -45,7 +45,7 @@ jobs:
       - name: Create deployment buckets if they don't exist
         run: |
           ENV=${{ steps.set-env.outputs.ENV}}
-          UNIQUE_ID=$(aws sts get-caller-identity --query "Account" --output text)
+          UNIQUE_ID=${{secrets.ACCOUNT_ID}}
           BUCKET_NAME="aws-sam-cli-managed-default-samclisourcebucket-$ENV-$UNIQUE_ID"
           if ! aws s3 ls "s3://$BUCKET_NAME" 2>&1 > /dev/null; then
             aws s3 mb "s3://$BUCKET_NAME" --region eu-central-1
