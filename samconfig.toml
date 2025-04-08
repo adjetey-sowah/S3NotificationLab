@@ -14,7 +14,7 @@ s3_prefix = "s3-notification-system-dev"
 region = "eu-central-1"
 confirm_changeset = false
 capabilities = "CAPABILITY_IAM"
-parameter_overrides = "Environment=dev EmailSubscriptionParameter=adjeteyjuliussowwah@gmail.com BucketName=s3-notification-bucket"
+parameter_overrides = "Environment=dev EmailSubscriptionParameter=adjeteyjuliussowah@gmail.com BucketName=s3-notification-bucket"
 
 [prod]
 [prod.deploy]
